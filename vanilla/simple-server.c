@@ -1,4 +1,4 @@
-/* run using ./server <port> */
+/*run using ./server <port> */
 
 #include <stdio.h>
 #include <stdlib.h>
