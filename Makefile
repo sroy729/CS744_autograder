@@ -37,6 +37,7 @@ all: $(EXE_1) $(EXE_2)
 $(EXE_1): $(OBJ_1) | $(BIN_DIR) $(OUT_DIR)
 	@echo Creating Server 
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	@cp src/out.txt $(OUT_DIR)/ #coping the refernce output to output location 
 
 $(EXE_2): $(OBJ_2) | $(BIN_DIR) $(OUT_DIR)
 	@echo Creating Client 
