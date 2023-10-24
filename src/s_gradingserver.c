@@ -17,7 +17,7 @@ int compileAndRun(const char* sourceFile) {
     char c1[10];
     char c2[10];
 	//docs:: compiling the program and capturing the error if there is any
-    int compileResult = system("gcc program.c -o bin/executable 2> output/compileError.txt");
+    int compileResult = system("g++ output/s_program.cpp -o bin/executable 2> output/compileError.txt");
     // printf("compileResult:%d\n", compileResult);
 
     if (compileResult != 0) {
@@ -33,7 +33,7 @@ int compileAndRun(const char* sourceFile) {
     {
         // fprintf(stderr, "RUNTIME ERROR\n");
 		//docs:: different from conventional 
-        system("g++ wrapper.cpp -o bin/wrapper");
+        system("g++ src/wrapper.cpp -o bin/wrapper");
         system("bin/wrapper bin/executable");
         return 1;
     }
@@ -131,15 +131,15 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        FILE* sourceFile = fopen("program.c", "wb");
+        FILE* sourceFile = fopen("output/s_program.cpp", "wb");
         fwrite(buffer, 1, bytesRead, sourceFile);
         fclose(sourceFile);
 
-        result = compileAndRun("program.c");
+        result = compileAndRun("output/s_program.cpp");
 
         if (result == 0) {
             // printf("\nCOMPILE ERROR\n");
-            send(clientSocket, "COMPILE ERROR", 13, 0);
+            send(clientSocket, "COMPILE ERROR\n", 14, 0);
             // resultbuff = "\nCOMPILE ERROR\n";
             // fd = open("compileError.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
         }
         else if (result == 1) {
             // printf("\nRUNTIME ERROR\n");
-            send(clientSocket, "RUNTIME ERROR", 13, 0);
+            send(clientSocket, "RUNTIME ERROR\n", 14, 0);
             // resultbuff = "\nRUNTIME ERROR\n";
             // fd = open("runError.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
             send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
         }
         else if (result == 2) {
-            send(clientSocket, "PASS", 4, 0);
+            send(clientSocket, "PASS\n", 5, 0);
             // resultbuff = "\nPASS\n";
             // fd = open("output.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
