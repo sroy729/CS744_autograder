@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define MAX_BUFFER_SIZE 4096
+#define MAX_BUFFER_SIZE 1024
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -51,14 +51,27 @@ int main(int argc, char* argv[]) {
     }
 
     fseek(sourceFile, 0, SEEK_END);
-    long fileSize = ftell(sourceFile);
+    int fileSize = ftell(sourceFile);
     fseek(sourceFile, 0, SEEK_SET);
 
     char buffer[MAX_BUFFER_SIZE];
     size_t bytesRead;
+	bzero(buffer, MAX_BUFFER_SIZE);	
 
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), sourceFile)) > 0) {
-        send(serverSocket, buffer, bytesRead, 0);
+	//first send the file size of the file
+	if (send(serverSocket, &fileSize, sizeof(fileSize), 0) == -1){
+		perror("Error sending file size");
+		fclose(sourceFile);
+		return -1;
+	}
+
+    while (!feof(sourceFile)) {
+		bytesRead = fread(buffer, 1, MAX_BUFFER_SIZE, sourceFile);
+		size_t byteSent = 0;
+		while(byteSent != bytesRead)//ensuring all bytes are sent
+			byteSent += send(serverSocket, buffer+byteSent, bytesRead, 0);
+		printf("[debug] buffer : %ld\n", bytesRead);
+		bzero(buffer, MAX_BUFFER_SIZE);	
     }
 
     fclose(sourceFile);

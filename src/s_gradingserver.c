@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -8,6 +9,60 @@
 #include <sys/types.h>
 
 #define MAX_BUFFER_SIZE 1024
+
+//docs:: correctly recieve the full file 
+//bascically to recieve a file of any size
+int recv_file(int sockfd, char*file_path){
+	char buffer[MAX_BUFFER_SIZE];
+	bzero(buffer, MAX_BUFFER_SIZE);
+	int file = open(file_path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+	printf("file des :: %d \n", file);
+	if (file <0){
+		perror("Error in opening the file");
+		return -1;
+	}
+
+	// char file_size_bytes[MAX_BUFFER_SIZE];
+	int file_size;
+	if (recv(sockfd, &file_size, sizeof(file_size), 0) == -1){
+		perror("Error in recieving the file size");
+		close(file);
+		return -1;
+	}
+
+	// memcpy(&file_size, file_size_bytes, sizeof(file_size_bytes));
+
+	// printf("[Debug] file size is :: %d\n", file_size);
+	// printf("file des :: %d \n", file);
+	
+	size_t byte_read = 0, total_byte_read =0;
+	while(true){
+		//read buffer amount of data
+		printf("ssinnnnn :: %d\n ", sizeof(buffer));
+		byte_read = recv(sockfd, buffer, sizeof(buffer), 0);
+		total_byte_read += byte_read;
+		if(byte_read <= 0){
+			perror("error in reciving the file");
+			close(file);
+			return -1;
+		}
+		printf("[DEBUG] buffer:%ld  \n", byte_read);
+		int r = write(file, buffer, byte_read);
+		printf("return %d\n", r);
+		//write the buffer into the file
+		//fwrite(buffer, 1, byte_read, file); 
+		//printf("[DEBUG] buffer:  \n", buffer);
+
+		bzero(buffer, MAX_BUFFER_SIZE);
+		if(total_byte_read >= file_size){
+			break;
+		}
+	}
+	close(file);
+	printf("jhunag\n");
+	return 0;
+}
 
 //docs:: Function to compile and run the code
 int compileAndRun(const char* sourceFile) {
@@ -124,16 +179,12 @@ int main(int argc, char* argv[]) {
         char runtimebuff[MAX_BUFFER_SIZE];
         char compilebuff[MAX_BUFFER_SIZE];
         char *resultbuff;
-        int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        printf("hi%d\n", bytesRead);
-        if (bytesRead <= 0) {
-            close(clientSocket);
-            continue;
-        }
-
-        FILE* sourceFile = fopen("output/s_program.cpp", "wb");
-        fwrite(buffer, 1, bytesRead, sourceFile);
-        fclose(sourceFile);
+		// the function first recieve the file size and then the file
+		if(recv_file(clientSocket, "output/s_program.cpp") != 0){
+			close(clientSocket);
+			return 0;
+			continue;
+		}
 
         result = compileAndRun("output/s_program.cpp");
 
