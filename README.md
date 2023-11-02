@@ -8,18 +8,25 @@ Below are the main requirements form the server and client and throughout the ve
 - Version V3: Multithreaded with thread pools and requests queue.
 
 We can assume that the purpose of the submitted program is simply to print the first ten numbers:
+
+```
 1 2 3 4 5 6 7 8 9 10
+```
 
 If the submitted program prints this output, it has passed, else it has failed. You may assume the programming language to be either C or C++. Do not assume python. 
 
 
 In all versions, the server will always be run as follows,
 
+```
 $./server  <port>
+```
 
 and the client will always be run as follows, 
 
+```
 $./submit  <serverIP:port>  <sourceCodeFileTobeGraded>
+```
 
 and will get back one of the following responses from the server:
 
