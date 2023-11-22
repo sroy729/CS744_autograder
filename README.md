@@ -91,6 +91,25 @@ Now run the client
 bin/client 127.0.0.1:<server port> test_file/<file you want send>
 ```
 
+## Milestone 2: Performance Evaluation setup for autograder server
 
+Now we want to measure the performance of the autograder server. Our focus parameter will be `capacity`, `scalibility` and `responsiveness`. 
+The aim of the load test is to test the simultaneous client handeling of the server.
+And how it performance with increasing load i.e increasing `M` (clients)
+To measure the performace of server with increasing load, we do a **load test**.
 
+**Load test Setup**
+
+The client
+- send a grading request 
+- wait's for response 
+- then sleep for some time 
+- then sends the next request 
+- CONTINUE  like this
+
+The above loop will be some `M` clients i.e. in each loop, `M` parallel client loop(request-response loop) will be active.
+
+To quatify the above mentioned parameters, we will calculate the following meterics.
+- **Throughput**: Number of successful requests/second in the experiment
+- **Average Response Time** : Time taken to get the response of request sent.
 
