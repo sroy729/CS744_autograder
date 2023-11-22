@@ -10,8 +10,8 @@
 #define MAX_BUFFER_SIZE 1024
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <serverIP:port> <sourceCodeFile>\n", argv[0]);
+    if (argc != 5) {
+        fprintf(stderr, "Usage: %s <serverIP:port> <sourceCodeFile> <loopNum> <sleepTimeSeconds>\n", argv[0]);
         return 1;
     }
 
@@ -23,6 +23,10 @@ int main(int argc, char* argv[]) {
     }
 
     char* sourceCodeFile = argv[2];
+	
+	//getting the loopNum and sleeptimeseconds into a variable
+	unsigned int loopNum = argv[3];
+	unsigned int sleepTimeSeconds = argv[4];
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1) {
