@@ -33,7 +33,11 @@ int recv_file(int sockfd, char*file_path){
 
 	// memcpy(&file_size, file_size_bytes, sizeof(file_size_bytes));
 
-	// printf("[Debug] file size is :: %d\n", file_size);
+	printf("[Debug] file size is :: %d\n", file_size);
+	if (file_size == -1){
+		close(file);
+		return -2;
+	}
 	// printf("file des :: %d \n", file);
 	
 	size_t byte_read = 0, total_byte_read =0;
@@ -168,20 +172,26 @@ int main(int argc, char* argv[]) {
 
     listen(serverSocket, 5);
 
+accept:
+	int clientSocket = accept(serverSocket, NULL, NULL);
     while (1) {
-        int clientSocket = accept(serverSocket, NULL, NULL);
         if (clientSocket == -1) {
             perror("Accept failed");
             continue;
         }
-
         char buffer[MAX_BUFFER_SIZE];
         char runtimebuff[MAX_BUFFER_SIZE];
         char compilebuff[MAX_BUFFER_SIZE];
+		char tempSendbuff[MAX_BUFFER_SIZE];
         char *resultbuff;
 		// the function first recieve the file size and then the file
-		if(recv_file(clientSocket, "output/s_program.cpp") != 0){
+		int ret = recv_file(clientSocket, "output/s_program.cpp") ;
+		if(ret  != 0){
 			close(clientSocket);
+			if (ret == -2){
+				printf("recieved -1\n");
+				goto accept;
+			}
 			return 0;
 			continue;
 		}
@@ -190,7 +200,8 @@ int main(int argc, char* argv[]) {
 
         if (result == 0) {
             // printf("\nCOMPILE ERROR\n");
-            send(clientSocket, "COMPILE ERROR\n", 14, 0);
+			strcpy(tempSendbuff, "COMPILE ERROR\n");
+            send(clientSocket, tempSendbuff, MAX_BUFFER_SIZE, 0);
             // resultbuff = "\nCOMPILE ERROR\n";
             // fd = open("compileError.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -203,7 +214,8 @@ int main(int argc, char* argv[]) {
         }
         else if (result == 1) {
             // printf("\nRUNTIME ERROR\n");
-            send(clientSocket, "RUNTIME ERROR\n", 14, 0);
+			strcpy(tempSendbuff, "RUNTIME ERROR\n");
+            send(clientSocket, tempSendbuff, MAX_BUFFER_SIZE, 0);
             // resultbuff = "\nRUNTIME ERROR\n";
             // fd = open("runError.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -214,7 +226,10 @@ int main(int argc, char* argv[]) {
             send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
         }
         else if (result == 2) {
-            send(clientSocket, "PASS\n", 5, 0);
+			memset(tempSendbuff, 0, MAX_BUFFER_SIZE); 
+			strcpy(tempSendbuff, "PASS\n");
+            int bs = send(clientSocket, tempSendbuff, MAX_BUFFER_SIZE, 0);
+			printf("[Debug] bs: %d\n" , bs);
             // resultbuff = "\nPASS\n";
             // fd = open("output.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -222,12 +237,15 @@ int main(int argc, char* argv[]) {
             fd1 = open("output/output.txt", O_RDONLY, 0644);
             read(fd1, runtimebuff, sizeof(runtimebuff));
             printf("pass output value: %s\n", runtimebuff);
-            send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
+            int bs2 = send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
+			printf("[Debug] bs2: %d\n" , bs2);
+
             // send(clientSocket, "PASS", 4, 0);
             printf("\nPASS\n");
         }
-        else if (result == 3) {
-            send(clientSocket, "OUTPUT ERROR", 12, 0);
+        else if (result == 3){ 
+			strcpy(tempSendbuff, "OUTPUT ERRIR\n");
+            send(clientSocket, tempSendbuff, MAX_BUFFER_SIZE, 0);
             // resultbuff = "\nOUTPUT ERROR\n";
             // fd = open("runtimeError.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
@@ -239,8 +257,9 @@ int main(int argc, char* argv[]) {
             send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
             printf("\nOUTPUT ERROR\n");
         }
-        close(clientSocket);
+        //close(clientSocket);
     }
+	printf("closing\n");
 
     close(serverSocket);
     return 0;

@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/time.h> // for gettimeofday()
 
 #define MAX_BUFFER_SIZE 1024
 
@@ -25,8 +26,12 @@ int main(int argc, char* argv[]) {
     char* sourceCodeFile = argv[2];
 	
 	//getting the loopNum and sleeptimeseconds into a variable
-	unsigned int loopNum = argv[3];
-	unsigned int sleepTimeSeconds = argv[4];
+	unsigned int loopNum = atoi(argv[3]);
+	unsigned int sleepTimeSeconds = atoi(argv[4]);
+
+	//variable for response time calculation 
+	struct timeval Tsend, Trecv ;
+	double responseTime;
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1) {
@@ -47,53 +52,71 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    FILE* sourceFile = fopen(sourceCodeFile, "rb");
-    if (sourceFile == NULL) {
-        perror("Failed to open source code file");
-        close(serverSocket);
-        return 1;
-    }
+	for(int i = 0; i< 4; i++){
+		printf("serverSocket : %d\n", serverSocket);
+		FILE* sourceFile = fopen(sourceCodeFile, "rb");
+		if (sourceFile == NULL) {
+			perror("Failed to open source code file");
+			close(serverSocket);
+			return 1;
+		}
 
-    fseek(sourceFile, 0, SEEK_END);
-    int fileSize = ftell(sourceFile);
-    fseek(sourceFile, 0, SEEK_SET);
+		fseek(sourceFile, 0, SEEK_END);
+		int fileSize = ftell(sourceFile);
+		fseek(sourceFile, 0, SEEK_SET);
 
-    char buffer[MAX_BUFFER_SIZE];
-    size_t bytesRead;
-	bzero(buffer, MAX_BUFFER_SIZE);	
+		char buffer[MAX_BUFFER_SIZE];
+		size_t bytesRead;
+		bzero(buffer, MAX_BUFFER_SIZE);	
 
-	//first send the file size of the file
-	if (send(serverSocket, &fileSize, sizeof(fileSize), 0) == -1){
-		perror("Error sending file size");
+		//first send the file size of the file
+		if (send(serverSocket, &fileSize, sizeof(fileSize), 0) == -1){
+			perror("Error sending file size");
+			fclose(sourceFile);
+			return -1;
+		}
+		
+		gettimeofday(&Tsend, NULL);
+		while (!feof(sourceFile)) {
+			bytesRead = fread(buffer, 1, MAX_BUFFER_SIZE, sourceFile);
+			size_t byteSent = 0;
+			while(byteSent != bytesRead){//ensuring all bytes are sent
+				printf("serverSocket : %d\n", serverSocket);
+				byteSent += send(serverSocket, buffer+byteSent, bytesRead, 0);
+			}
+			printf("[debug] buffer : %ld\n", bytesRead);
+			bzero(buffer, MAX_BUFFER_SIZE);	
+		}
+
 		fclose(sourceFile);
-		return -1;
+
+		char response[MAX_BUFFER_SIZE];
+		bzero(response, MAX_BUFFER_SIZE);
+		int bytesReceived = recv(serverSocket, response, MAX_BUFFER_SIZE, 0);
+		printf("[Debug] byteReceieved: %d\n" , bytesReceived);
+		if (bytesReceived > 0) {
+			response[bytesReceived] = '\0';
+			printf("Response : %s\n", response);
+		}
+
+		char response2[MAX_BUFFER_SIZE];
+		bzero(response2, MAX_BUFFER_SIZE);
+		int bytesReceived2 = recv(serverSocket, response2, MAX_BUFFER_SIZE, 0);
+		printf("[Debug] byteReceieved2: %d\n" , bytesReceived2);
+		gettimeofday(&Trecv, NULL);
+		responseTime =((Trecv.tv_sec -Tsend.tv_sec)*1e6 + Trecv.tv_usec - Tsend.tv_usec)/1e6;
+		printf("Response Time : %lf sec\n", responseTime);
+		if (bytesReceived2 > 0) {
+			response2[bytesReceived2] = '\0';
+			printf("Response2 : %s\n", response2);
+		}
+		printf("itiration: %d\n", i);
+		sleep(2);
 	}
 
-    while (!feof(sourceFile)) {
-		bytesRead = fread(buffer, 1, MAX_BUFFER_SIZE, sourceFile);
-		size_t byteSent = 0;
-		while(byteSent != bytesRead)//ensuring all bytes are sent
-			byteSent += send(serverSocket, buffer+byteSent, bytesRead, 0);
-		printf("[debug] buffer : %ld\n", bytesRead);
-		bzero(buffer, MAX_BUFFER_SIZE);	
-    }
-
-    fclose(sourceFile);
-
-    char response[MAX_BUFFER_SIZE];
-    int bytesReceived = recv(serverSocket, response, sizeof(response), 0);
-    if (bytesReceived > 0) {
-        response[bytesReceived] = '\0';
-        printf("Response : %s\n", response);
-    }
-
-    char response2[MAX_BUFFER_SIZE];
-    int bytesReceived2 = recv(serverSocket, response2, sizeof(response2), 0);
-    if (bytesReceived2 > 0) {
-        response2[bytesReceived2] = '\0';
-        printf("Response2 : %s\n", response2);
-    }
-
+	printf("closing socket\n");
+	int sen =-1;
+	send(serverSocket, &sen, sizeof(sen), 0); 
     close(serverSocket);
     return 0;
 }
