@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-	for(int i = 0; i< 4; i++){
+	for(int i = 0; i< loopNum; i++){
 		printf("serverSocket : %d\n", serverSocket);
 		FILE* sourceFile = fopen(sourceCodeFile, "rb");
 		if (sourceFile == NULL) {
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 			printf("Response2 : %s\n", response2);
 		}
 		printf("itiration: %d\n", i);
-		sleep(2);
+		sleep(sleepTimeSeconds);
 	}
 
 	printf("closing socket\n");
