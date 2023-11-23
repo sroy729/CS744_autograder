@@ -123,8 +123,8 @@ int compileAndRun(const char* sourceFile) {
             if (n1 != n2 || memcmp(c1, c2, n1) != 0) {
                 // printf("Difference found on line %d\n", count + 1);
                 ret = 3;
-                close(fd1);
-                close(fd2);
+                //close(fd1);
+                //close(fd2);
                 break;
             }
             ret = 2;
@@ -138,9 +138,50 @@ int compileAndRun(const char* sourceFile) {
             }
             count++;
         }
+		
+		close(fd1);
+		close(fd2);
         close(fd);
     }
     return ret;
+}
+//to send a file error free can be used to send the .txt file created at output
+int send_file(int serverSocket, char* sourceCodeFile){
+
+	FILE* sourceFile = fopen(sourceCodeFile, "rb");
+	if (sourceFile == NULL) {
+		perror("Failed to open source code file");
+		close(serverSocket);
+		return 1;
+	}
+
+	fseek(sourceFile, 0, SEEK_END);
+	int fileSize = ftell(sourceFile);
+	fseek(sourceFile, 0, SEEK_SET);
+
+	char buffer[MAX_BUFFER_SIZE];
+	size_t bytesRead;
+	bzero(buffer, MAX_BUFFER_SIZE);	
+
+	//first send the file size of the file
+	if (send(serverSocket, &fileSize, sizeof(fileSize), 0) == -1){
+	perror("[send_file] Error sending file size");
+	fclose(sourceFile);
+	return -1;
+	}
+	
+	while (!feof(sourceFile)) {
+		bytesRead = fread(buffer, 1, MAX_BUFFER_SIZE, sourceFile);
+		size_t byteSent = 0;
+		while(byteSent != bytesRead){//ensuring all bytes are sent
+			printf("[send_file] serverSocket : %d\n", serverSocket);
+			byteSent += send(serverSocket, buffer+byteSent, bytesRead, 0);
+		}
+		printf("[debug send_file] buffer : %ld\n", bytesRead);
+		bzero(buffer, MAX_BUFFER_SIZE);	
+	}
+
+	fclose(sourceFile);
 }
 
 int main(int argc, char* argv[]) {
@@ -234,7 +275,8 @@ accept:
             // fd = open("output.txt", O_RDWR | O_APPEND, 0644);
             // printf("write: %ld\n", write(fd, resultbuff, sizeof(resultbuff)));
             // close(fd);
-            fd1 = open("output/output.txt", O_RDONLY, 0644);
+			//send_file(clientSocket, "output/output.txt");
+			fd1 = open("output/output.txt", O_RDONLY, 0644);
             read(fd1, runtimebuff, sizeof(runtimebuff));
             printf("pass output value: %s\n", runtimebuff);
             int bs2 = send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
@@ -257,6 +299,7 @@ accept:
             send(clientSocket, runtimebuff, sizeof(runtimebuff), 0);
             printf("\nOUTPUT ERROR\n");
         }
+		close(fd1);
         //close(clientSocket);
     }
 	printf("closing\n");
