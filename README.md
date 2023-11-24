@@ -113,3 +113,15 @@ To quatify the above mentioned parameters, we will calculate the following meter
 - **Throughput**: Number of successful requests/second in the experiment
 - **Average Response Time** : Time taken to get the response of request sent.
 
+### Application level protocol
+
+Current protocol invols various packet transfer between client and server, which is shown below.
+
+First setup the connection between Client and server. Once the connection is establised now start sending data
+
+```mermaid
+sequenceDiagram
+    Client->>Server: Login (Username, Password)
+    Server-->>Client: 200 OK & JWT
+```
+
