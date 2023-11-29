@@ -12,34 +12,40 @@
 
 int main(int argc, char* argv[]) {
 
+	if (argc != 7) 
+    {
+        fprintf(stderr, "Usage: %s <serverIP:port> <sourceCodeFile> <loopNum> <sleepTimeSeconds> <clientid> <numClients>\n", argv[0]);
+        return 1;
+    }
+
     long double avgResponseTime = 0.0;
     double avgThroughput;
     double loopCompleteTime = 0.0;
     double tempLoopTime = 0.0;
     int numSuccessfulResp = 0;
 
-    if (argc != 5) {
-        fprintf(stderr, "Usage: %s <serverIP:port> <sourceCodeFile> <loopNum> <sleepTimeSeconds>\n", argv[0]);
-        return 1;
-    }
-
+	//getting all the arguement assigned to variables
     char* serverAddressStr = strtok(argv[1], ":");
     char* serverPortStr = strtok(NULL, ":");
-    if (!serverAddressStr || !serverPortStr) {
-        fprintf(stderr, "Invalid server address format.\n");
-        return 1;
-    }
-
     char* sourceCodeFile = argv[2];
-	
-	//getting the loopNum and sleeptimeseconds into a variable
 	unsigned int loopNum = atoi(argv[3]);
 	unsigned int sleepTimeSeconds = atoi(argv[4]);
+	unsigned int clientID = atoi(argv[5]);
+	unsigned int numClients = atoi(argv[6]);//maximum number of clients(M) 
 
 	//variable for response time calculation 
 	struct timeval Tsend, Trecv ;
 	struct timeval start, end;
 	double responseTime;
+
+	//ack all the parameter that are running the client
+	printf("\n************Working parameters********************\n");
+    printf("ClientID: %d\nsourceCodeFilePath: %s\nnumLoop: %d\nsleepTime: %d\nnumClients: %d\n\n", clientID, sourceCodeFile, loopNum, sleepTimeSeconds, numClients);
+
+    if (!serverAddressStr || !serverPortStr) {
+        fprintf(stderr, "Invalid server address format.\n");
+        return 1;
+    }
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1) {
