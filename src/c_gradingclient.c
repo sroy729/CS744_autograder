@@ -11,6 +11,13 @@
 #define MAX_BUFFER_SIZE 1024
 
 int main(int argc, char* argv[]) {
+
+    long double avgResponseTime = 0.0;
+    double avgThroughput;
+    double loopCompleteTime = 0.0;
+    double tempLoopTime = 0.0;
+    int numSuccessfulResp = 0;
+
     if (argc != 5) {
         fprintf(stderr, "Usage: %s <serverIP:port> <sourceCodeFile> <loopNum> <sleepTimeSeconds>\n", argv[0]);
         return 1;
@@ -31,6 +38,7 @@ int main(int argc, char* argv[]) {
 
 	//variable for response time calculation 
 	struct timeval Tsend, Trecv ;
+	struct timeval start, end;
 	double responseTime;
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -53,6 +61,7 @@ int main(int argc, char* argv[]) {
     }
 
 	for(int i = 0; i< loopNum; i++){
+		gettimeofday(&start, NULL);
 		printf("serverSocket : %d\n", serverSocket);
 		FILE* sourceFile = fopen(sourceCodeFile, "rb");
 		if (sourceFile == NULL) {
@@ -105,12 +114,19 @@ int main(int argc, char* argv[]) {
 		printf("[Debug] byteReceieved2: %d\n" , bytesReceived2);
 		gettimeofday(&Trecv, NULL);
 		responseTime =((Trecv.tv_sec -Tsend.tv_sec)*1e6 + Trecv.tv_usec - Tsend.tv_usec)/1e6;
+		avgResponseTime += responseTime;
 		printf("Response Time : %lf sec\n", responseTime);
 		if (bytesReceived2 > 0) {
 			response2[bytesReceived2] = '\0';
 			printf("Response2 : %s\n", response2);
+			numSuccessfulResp++;
 		}
 		printf("itiration: %d\n", i);
+		gettimeofday(&end, NULL);
+		//get the cumulative loopcompletetime
+		tempLoopTime =((end.tv_sec - start.tv_sec)*1e6 + end.tv_usec - start.tv_usec)/1e6;
+		loopCompleteTime += tempLoopTime;
+		printf("Loop Complete Time+ : %lf sec\n", loopCompleteTime);
 		sleep(sleepTimeSeconds);
 	}
 
@@ -118,5 +134,11 @@ int main(int argc, char* argv[]) {
 	int sen =-1;
 	send(serverSocket, &sen, sizeof(sen), 0); 
     close(serverSocket);
+    avgResponseTime = avgResponseTime / loopNum;
+    avgThroughput = (numSuccessfulResp / loopCompleteTime) /* 1000000000*/;
+	//printing connetion summary
+    printf("\n\n*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
+
+
     return 0;
 }
