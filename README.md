@@ -118,6 +118,7 @@ To quatify the above mentioned parameters, we will calculate the following meter
 Current protocol invols various packet transfer between client and server, which is shown below.
 
 First setup the connection between Client and server. Once the connection is establised now start sending data
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -132,3 +133,32 @@ sequenceDiagram
     Client->>Server: [END]Send file size (-1)
     Server--xClient: 
 ```
+### Implementation details
+
+The aim to simulate simultaneous connection. Therefore the client connect to server and within same socket connetion sends grading files
+in a loop, the loop num is decided by `loopNum` variable. In between loop client sleeps for some time, controlled by sleepTimeSeconds.
+
+After a clients runs for n number in a loop it ends connection and log the details of the connection, recording various parameter in a log 
+file, in `output/connection_logs/`. The file name follow the following convention `log_<client_id>_of_<total_client>.log`. Below is the 
+logged parameters of a connection 
+
+```log
+*****************Connection summary **************
+avgResponseTime(sec): 8.538458
+avgThroughput(resps/sec): 0.117116
+Total loopCompleteTime(sec): 42.692711
+numSuccessfulResp: 5
+Requested: 5
+```
+
+To perform a Load test, go to `scripts` folder, and run the following command.
+
+``` bash
+./client_script.sh <port_no> <M> <loop_count> <sleep_second> ./test_files/<test_file>.cpp
+```
+
+where `M` is the parameter which control how many parallel connetion will be there.
+
+After a sucessful run log will be generated, you can choose to run the plot script or exit.
+
+
