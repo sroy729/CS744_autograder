@@ -118,10 +118,17 @@ To quatify the above mentioned parameters, we will calculate the following meter
 Current protocol invols various packet transfer between client and server, which is shown below.
 
 First setup the connection between Client and server. Once the connection is establised now start sending data
-
 ```mermaid
 sequenceDiagram
-    Client->>Server: Login (Username, Password)
-    Server-->>Client: 200 OK & JWT
+    autonumber
+    Client->>Server: Send connection request
+    Server-->>Client: Accept connection 
+	loop
+	    Client->>+Server: Send file size of grading file
+		Client->>Server: Send grading file
+		Server-->>Client: PASS/*_ERROR 
+		Server-->>-Client: output/error
+	end
+    Client->>Server: [END]Send file size (-1)
+    Server--xClient: 
 ```
-
