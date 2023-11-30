@@ -145,6 +145,16 @@ int main(int argc, char* argv[]) {
 	//printing connetion summary
     printf("\n\n*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
 
-
+    char newfile[100];
+	sprintf(newfile, "./output/log_%d_of_%d.txt", clientID, numClients);
+    FILE *file = fopen(newfile, "w+");
+	if (file == NULL){
+		perror("Error");
+		printf("error in file creation\n");
+	}
+    fprintf(file, "\n\n*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
+	printf("hi\n");
+    printf("Log File created: %s\n", newfile);
+    fclose(file);
     return 0;
 }
