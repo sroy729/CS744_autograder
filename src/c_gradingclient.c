@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 		perror("Error");
 		printf("error in file creation\n");
 	}
-    fprintf(file, "\n\n*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
+    fprintf(file, "*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
 	printf("hi\n");
     printf("Log File created: %s\n", newfile);
     fclose(file);
