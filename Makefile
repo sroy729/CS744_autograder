@@ -48,6 +48,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 
 $(BIN_DIR) $(OBJ_DIR) $(OUT_DIR):
 	mkdir -p $@
+	mkdir -p $(OUT_DIR)/connection_logs
 
 clean: 
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR) $(OUT_DIR)
