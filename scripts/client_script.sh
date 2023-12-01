@@ -7,7 +7,7 @@ Comment		: To connect to a specfic IP change the serverIP variable also change t
 '
 
 # # Set the range of M values to test
-# M_values=(1 2 4 8 16 32 64)
+M_values=(1 2 4 8 16 32 64 75 100 128  256 512)
 serverIP='127.0.0.0'
 
 # Check if all required arguments are provided
@@ -32,4 +32,26 @@ for ((i = 1; i <= num_clients; i++)); do
 done
 
 echo "All clients started successfully."
+
+wait
+
+#!/bin/bash
+
+while true; do
+    read -p "Do you want to continue with anlysis? (y/n): " choice
+
+    case $choice in
+        [Yy]* )
+            echo "Continuing..."
+			current_directory=$(pwd)
+			echo "Current directory is: $current_directory"
+			. ./scripts/analysis.sh
+            break ;;
+        [Nn]* )
+            echo "Exiting..."
+            break ;;
+        * )
+            echo "Invalid choice. Please enter 'y' or 'n'." ;;
+    esac
+done
 
