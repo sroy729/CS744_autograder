@@ -147,13 +147,13 @@ int main(int argc, char* argv[]) {
 
 	//connetion logging
     char newfile[100];
-	sprintf(newfile, "./output/connection_logs/log_%d_of_%d.txt", clientID, numClients);
-    FILE *file = fopen(newfile, "w+");
+	sprintf(newfile, "./output/connection_logs/log_of_%d_M.txt", numClients);
+    FILE *file = fopen(newfile, "a+");
 	if (file == NULL){
 		perror("Error");
 		printf("error in file creation\n");
 	}
-    fprintf(file, "*****************Connection summary **************\navgResponseTime(sec): %Lf\navgThroughput(resps/sec): %f\nTotal loopCompleteTime(sec): %lf \nnumSuccessfulResp: %d\nRequested: %d\n", avgResponseTime, avgThroughput, loopCompleteTime, numSuccessfulResp, loopNum);
+    fprintf(file,"%d %Lf %f\n", clientID, avgResponseTime, avgThroughput);
 	printf("hi\n");
     printf("Log File created: %s\n", newfile);
     fclose(file);
