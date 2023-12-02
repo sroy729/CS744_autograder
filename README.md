@@ -161,4 +161,34 @@ where `M` is the parameter which control how many parallel connetion will be the
 
 After a sucessful run log will be generated, you can choose to run the plot script or exit.
 
+### Final Application protocol for server
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Client->>+Server: Send Connection Request[NEW]
+    Server-->>Client: Accept Connection 
+	Client->>Server: Send File Size of Grading File
+	Client->>Server: Send Grading File
+	Server-->>Client: Send Request Id
+    Client->>Server: [END]Send File Size (-1)
+    Server--x-Client: Close Client Socket[NEW]
+
+    Note over Server,Database: Save Program File and Compile_Error File
+    Note over Server,Database: Save Execution_Error File and Output File
+    Note over Server,Database: Grade the Program
+    Server->>Database: Save Results of Program Grading in the Database
+    loop
+        Client->>+Server: Send Grading Check Status Request[STATUS]
+        Server-->>Client: Accept Connection
+        Server->>Database: Retrieve Grading Status
+        Server->>Client: Send Grading Status
+        Note over Client: Check Grading Status, if No, goto 15
+        Client->>Server: If yes, Send Grading Result Retrieval Request
+        Server->>Client: Send Grading Result
+        Server--x-Client: Close Client Socket[STATUS]
+    end
+```
+
+
 
